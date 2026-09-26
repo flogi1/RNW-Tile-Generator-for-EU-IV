@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Self-update, update packaging and bug-report logic, without any UI (ported from the
+       Paradox Modding Tool's ParadoxModTool.Updates). No NuGet dependencies. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>RnwTileGenerator.Updates</RootNamespace>
+  </PropertyGroup>
+
+</Project>

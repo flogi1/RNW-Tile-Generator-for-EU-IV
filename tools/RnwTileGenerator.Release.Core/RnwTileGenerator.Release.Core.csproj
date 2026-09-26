@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Release logic without UI (ported from the Paradox Modding Tool's release tool): changelog, version,
+       build/check/publish/package steps, signing, public commit, push and GitHub release. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>RnwTileGenerator.Release</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\RnwTileGenerator.Updates\RnwTileGenerator.Updates.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="RnwTileGenerator.Checks" />
+  </ItemGroup>
+
+</Project>

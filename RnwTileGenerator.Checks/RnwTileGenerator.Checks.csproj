@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Self-made check runner instead of xUnit: the project deliberately has no NuGet
+       dependencies at all (see CLAUDE.md). Checks are written like xUnit tests
+       ([Fact], [Theory] + [InlineData], Assert.*) so tests ported from PMT stay close to
+       their originals. Exit code = number of failed checks (capped at 100). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>RnwTileGenerator.Checks</RootNamespace>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <!-- UseWPF (needed to load the App assembly) drops System.IO and System.Net.Http from the implicit usings. -->
+  <ItemGroup>
+    <Using Include="System.IO" />
+    <Using Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RnwTileGenerator.Updates\RnwTileGenerator.Updates.csproj" />
+    <ProjectReference Include="..\RnwTileGenerator.App\RnwTileGenerator.App.csproj" />
+    <ProjectReference Include="..\tools\RnwTileGenerator.Release.Core\RnwTileGenerator.Release.Core.csproj" />
+  </ItemGroup>
+
+</Project>

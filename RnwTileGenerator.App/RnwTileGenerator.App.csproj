@@ -1,0 +1,90 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- Deliberately OFF (unlike the Core project): when both UseWPF and
+         UseWindowsForms are true, the SDK's ImplicitUsings machinery adds
+         *both* System.Windows.Controls/Forms/etc. global usings, and many
+         control names (Button, TextBox, ComboBox, ListBox, CheckBox,
+         RadioButton, GroupBox, Menu, TabControl, Image, Point,
+         MouseEventArgs, ...) exist in both namespaces - every reference
+         to any of them becomes CS0104-ambiguous project-wide. Every file
+         in this project already carries the explicit `using` directives
+         it needs (checked file by file), so turning this off just removes
+         the conflicting auto-imports without requiring any other change. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>RnwTileGenerator.App</RootNamespace>
+    <AssemblyName>RnwTileGenerator</AssemblyName>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <Version>1.0.6</Version>
+    <!-- Code-only WPF: no .xaml files anywhere in this project (see
+         MainWindow.cs / Program.cs), so there is nothing for the XAML
+         compiler to do and no ApplicationDefinition is declared. -->
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <!-- Deliberately NOT set to true: InvariantGlobalization strips out
+         the ICU/culture data, and WPF's XmlLanguage (used internally by
+         layout, data binding, and basically every control - see
+         XmlLanguage.GetSpecificCulture()) needs real culture data to
+         resolve "en-US". With it on, that lookup throws
+         "Cannot find non-neutral culture related to 'en-us'" the moment
+         almost anything triggers a layout/binding pass - opening a
+         dialog, switching tabs, etc. WPF apps are simply not compatible
+         with this switch. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RnwTileGenerator.Core\RnwTileGenerator.Core.csproj" />
+    <ProjectReference Include="..\RnwTileGenerator.Updates\RnwTileGenerator.Updates.csproj" />
+  </ItemGroup>
+
+  <!-- Reader files next to the exe (also in every release ZIP, so they come along with each update):
+       Readme\Changelog.txt opens from Help > Changelog. -->
+  <ItemGroup>
+    <None Include="..\Readme\Changelog.txt" Link="Readme\Changelog.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="..\Installation Readme.txt" Link="Installation Readme.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="..\RELEASE_NOTES.md" Link="RELEASE_NOTES.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="..\LICENSE" Link="LICENSE">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- The checks project (RnwTileGenerator.Checks) tests internal helpers such as Loc.Entries. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="RnwTileGenerator.Checks" />
+  </ItemGroup>
+
+  <!-- Runde 9 feedback item 7: real game icons (uncompressed 32-bit BGRA
+       .dds files, see DdsIcon.cs) for the Special Features tab, shipped
+       next to the built .exe rather than embedded, so dropping in
+       additional/updated icon files later never needs a rebuild - just a
+       copy into this Icons folder (see IconCatalog.cs's file-name
+       convention). Never fails the build if a file is (temporarily)
+       missing - IconCatalog.TryGet already falls back to the original
+       colored-marker rendering for any icon that can't be found/read. -->
+  <!-- Application icon: embedded as a WPF resource (window/splash icon, see
+       SplashWindow.cs AppIcon) in addition to <ApplicationIcon> (exe icon). -->
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Icons\*.dds">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

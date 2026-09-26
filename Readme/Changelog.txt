@@ -1,0 +1,18 @@
+Unreleased
+New
+Changed
+Fixed
+
+v1.0.6 (26.09.2026)
+New
+- Initial Public release
+- Automatic updates via GitHub: Help > Check for updates, a daily check at startup (can be switched off) and an update bar with "Update now". The new version is downloaded, its signature is checked, and the program restarts with your project reopened.
+- Help menu with Changelog and About.
+- Help > Report a bug: post a prefilled GitHub issue (needs a GitHub account) or send the report by email; the crash window has a Report bug button. Crash log entries are included without your personal folder names.
+- Rivers tab: the river selected in the list is highlighted red on the map.
+- Random Generation tab: "Generate - new seed" and "Generate - same seed" to quickly try variants.
+- Rivers tab: "Regenerate - new seed" and "Regenerate - same seed".
+
+v1.0.5 (19.09.2026)
+New
+- First public version. See RELEASE_NOTES.md for the full feature overview.

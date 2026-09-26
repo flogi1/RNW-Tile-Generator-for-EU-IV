@@ -1,0 +1,22 @@
+# .NET build output
+bin/
+obj/
+.vs/
+*.user
+
+# Release output (release tool, old publish.bat) and the published release tool
+/Release/
+/release-output/
+/release-tool/
+
+# Local tile exports and archives
+/RNW Exports/
+*.zip
+
+# Logs written next to the build / the exe
+build_log.txt
+crash_log.txt
+
+# Git worktrees and superpowers scratch (plan ledgers, mockups)
+/.worktrees/
+/.superpowers/
