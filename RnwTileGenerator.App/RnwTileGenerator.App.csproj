@@ -20,7 +20,7 @@
     <RootNamespace>RnwTileGenerator.App</RootNamespace>
     <AssemblyName>RnwTileGenerator</AssemblyName>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <Version>1.0.7</Version>
+    <Version>1.0.8</Version>
     <!-- Code-only WPF: no .xaml files anywhere in this project (see
          MainWindow.cs / Program.cs), so there is nothing for the XAML
          compiler to do and no ApplicationDefinition is declared. -->
@@ -52,7 +52,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
-    <None Include="..\RELEASE_NOTES.md" Link="RELEASE_NOTES.md">
+    <None Include="..\RELEASE_NOTES.txt" Link="RELEASE_NOTES.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
@@ -70,9 +70,9 @@
   <!-- Runde 9 feedback item 7: real game icons (uncompressed 32-bit BGRA
        .dds files, see DdsIcon.cs) for the Special Features tab, shipped
        next to the built .exe rather than embedded, so dropping in
-       additional/updated icon files later never needs a rebuild - just a
-       copy into this Icons folder (see IconCatalog.cs's file-name
-       convention). Never fails the build if a file is (temporarily)
+       additional/updated icon files later never needs a rebuild. Users put
+       their own icons into UserIcons\ next to the exe instead (Icons\ is
+       replaced by every update, see IconCatalog.cs). Never fails the build if a file is (temporarily)
        missing - IconCatalog.TryGet already falls back to the original
        colored-marker rendering for any icon that can't be found/read. -->
   <!-- Application icon: embedded as a WPF resource (window/splash icon, see

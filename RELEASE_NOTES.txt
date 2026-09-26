@@ -1,0 +1,127 @@
+RNW Tile Generator for Europa Universalis IV
+============================================
+
+RNW Tile Generator is a standalone Windows program that creates Random New
+World tiles for Europa Universalis IV: the tile text file plus the
+coastline, height, river and province bitmaps, in exactly the format and
+folder layout the game expects. Draw a tile by hand, generate one
+automatically, or open an existing game tile and change it.
+
+No installation and no .NET runtime needed: unzip and start
+RnwTileGenerator.exe. From version 1.0.6 on, the program keeps itself up
+to date.
+
+
+MAIN FEATURES
+-------------
+
+Complete tile workflow in one program
+  One tab per step: Coastline, Mountains & Height, Rivers, Provinces,
+  Special Features, Metadata and Export. Work through them in order or jump
+  back and forth; undo and redo cover every step.
+
+Automatic tile generation
+  The Random Generation tab builds a whole tile in one run: coastline,
+  terrain, rivers, provinces, straits, modifiers and regions. Every result
+  is reproducible from its seed. Sliders steer land share, terrain, river
+  count, province size and more. Six built-in generation presets plus any
+  number of your own, saved seeds with notes, and "Generate - new seed" /
+  "Generate - same seed" to compare variants quickly.
+
+Rivers that look natural and never crash the game
+  Generated rivers come from a flow-accumulation model: clean trees
+  without loops, tributaries at real confluences, optional delta arms and
+  river sizes that follow the catchment area. A "River smoothness" slider
+  sets how calm or winding they are. Rivers can also be drawn by hand
+  (waypoints or freehand, pixel by pixel) with a live preview of the real
+  river type and colour. The river selected in the list is highlighted red
+  on the map. An export check warns about river loops that would crash the
+  game.
+
+Organic province borders
+  Automatic land and sea provinces with adjustable size, size variance and
+  border curviness, without stray pixels. Optional warning at the game's
+  limit of about 1000 provinces.
+
+Special features with the game's own icons
+  Straits, modifiers and regions, placed by hand or generated
+  automatically with adjustable frequency. Trade centre, natural harbour,
+  estuary and other icons use the original game graphics.
+
+Start from what already exists
+  Load existing game tiles to edit them, import a grayscale heightmap, or
+  trace any map image into land and water (experimental). A
+  semi-transparent reference image can be shown over the canvas as a
+  drawing aid.
+
+Safe export
+  Export writes <name>\<name>.txt plus a data\ folder with the bitmaps.
+  Before writing, it checks for duplicate province colours, land below
+  water level, empty layers, the province limit and river loops. Projects
+  can be saved and reopened at any time (.rnwproj).
+
+
+UPDATES AND SUPPORT
+-------------------
+
+Automatic updates
+  Once a day at startup (can be switched off) the program asks GitHub
+  whether a new version exists; no data about you or your tiles is sent. A
+  yellow bar then offers "Update now": the program downloads the new
+  version, checks its digital signature and checksum, asks whether to save
+  your project and restarts with it reopened. Settings, presets and saved
+  seeds are kept. If anything goes wrong, the previous version is restored
+  automatically. Help > "Check for updates" starts the check by hand.
+
+Bug reports from inside the program
+  Help > "Report a bug", or "Report bug" in the error window. Describe the
+  problem and see the complete report before anything is sent. Post it as
+  a prefilled GitHub issue (needs a GitHub account) or send it by email.
+  The last crash log entries are included, with your personal folder names
+  removed.
+
+Changelog and About
+  Help > Changelog lists the changes of every version; Help > About shows
+  the version, the license and a link to the project page.
+
+
+INTERFACE
+---------
+
+- Seven languages: English, German, Spanish, French, Italian, Russian and
+  Simplified Chinese
+- Every slider has an editable number field
+- Brush sizes and brush presets for all painting tools
+- Pixel-accurate zoom and pan, optional grid
+- Loading screen at startup, no console window
+- Crash log written if something goes wrong
+
+
+REQUIREMENTS
+------------
+
+- Windows 10 or 11, 64-bit. Nothing else: the release is self-contained
+  (about 75 MB).
+- Put the program in a folder you can write to, for example inside your
+  user profile. Automatic updates do not work from protected folders such
+  as C:\Program Files.
+
+
+KNOWN LIMITATIONS
+-----------------
+
+- The program is not digitally signed. Windows SmartScreen shows a warning
+  on first launch ("More info" -> "Run anyway"), and Smart App Control may
+  block it. Building from source avoids this.
+- Map-image tracing is experimental and uses a simple brightness
+  threshold.
+- On very flat terrain at the smoothest settings, rivers can still show
+  some 45-degree corners.
+
+
+LICENSE AND SUPPORT
+-------------------
+
+Free software under the MIT license; the source code is on GitHub. If the
+tool is useful to you, the Donate menu entry leads to the project's GitHub
+Sponsors page.

@@ -581,22 +581,22 @@ public sealed partial class MainWindow : Window
     {
         if (CurrentPath == null) { SaveProjectAs(); return; }
         Project!.Save(CurrentPath);
-        Dialogs.Info(this, "Save project", $"Saved to {CurrentPath}");
+        Dialogs.Info(this, Loc.T("menu.saveProject"), string.Format(Loc.T("save.savedTo"), CurrentPath));
     }
 
     private void SaveProjectAs()
     {
         var sfd = new SaveFileDialog
         {
-            Title = "Save project as",
+            Title = Loc.T("menu.saveProjectAs"),
             DefaultExt = ".rnwproj",
-            Filter = "RNW Tile Generator project (*.rnwproj)|*.rnwproj",
+            Filter = Loc.T("save.filter"),
             FileName = $"{Project!.Name}.rnwproj",
         };
         if (sfd.ShowDialog(this) != true) return;
         Project.Save(sfd.FileName);
         CurrentPath = sfd.FileName;
-        Dialogs.Info(this, "Save project", $"Saved to {sfd.FileName}");
+        Dialogs.Info(this, Loc.T("menu.saveProject"), string.Format(Loc.T("save.savedTo"), sfd.FileName));
     }
 
     // Export() itself now creates a <Name>/ folder (with the .txt directly

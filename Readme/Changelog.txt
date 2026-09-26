@@ -3,6 +3,17 @@ New
 Changed
 Fixed
 
+v1.0.8 (26.09.2026)
+New
+- Own icons in a UserIcons folder next to the program replace the shipped ones and survive updates.
+Changed
+- The feature overview is now RELEASE_NOTES.txt (plain text, updated for all current features) instead of RELEASE_NOTES.md.
+- Failed or cancelled updates are reported in the update bar (with an Open log button) instead of a message box.
+- Restart without saving reopens the project in its last saved state.
+- Save dialogs and messages follow the chosen language.
+Fixed
+- The update bar switches language together with the rest of the program.
+
 v1.0.7 (26.09.2026)
 Fixed
 - Installation Readme: names 1.0.6 as the first version with automatic updates (it said 1.1.0).
@@ -19,4 +30,4 @@ New
 
 v1.0.5 (19.09.2026)
 New
-- First public version. See RELEASE_NOTES.md for the full feature overview.
+- First public version. See RELEASE_NOTES.txt for the full feature overview.

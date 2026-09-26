@@ -32,20 +32,18 @@ public sealed partial class MainWindow
             OpenProjectFile(project);
         }
 
-        // Only after the splash has closed: a MessageBox appearing at the same moment would vanish again at once.
+        // All three results go into the update bar (the failed one with an "Open log" button).
         if (_start.Applied is { } applied)
         {
-            ShowUpdateNotice(UpdateTexts.BarUpdated(applied));
+            ShowUpdateNotice(new UpdateNotice(UpdateNoticeKind.Applied, applied));
         }
-
-        if (_start.Failed is { } failed)
+        else if (_start.Failed is { } failed)
         {
-            ShowAfterIdle(() => MessageBox.Show(this, UpdateTexts.StartFailed(failed, log.Path), UpdateTexts.StartFailedTitle, MessageBoxButton.OK, MessageBoxImage.Warning));
+            ShowUpdateNotice(new UpdateNotice(UpdateNoticeKind.Failed, failed));
         }
-
-        if (_start.Cancelled is { } cancelled)
+        else if (_start.Cancelled is { } cancelled)
         {
-            ShowAfterIdle(() => MessageBox.Show(this, UpdateTexts.StartCancelled(cancelled), UpdateTexts.StartCancelledTitle, MessageBoxButton.OK, MessageBoxImage.Information));
+            ShowUpdateNotice(new UpdateNotice(UpdateNoticeKind.Cancelled, cancelled));
         }
     }
 
@@ -88,6 +86,4 @@ public sealed partial class MainWindow
             Dialogs.Error(this, "Could not load project", $"{exc.Message}\n\n{exc}");
         }
     }
-
-    private void ShowAfterIdle(Action action) => Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, action);
 }

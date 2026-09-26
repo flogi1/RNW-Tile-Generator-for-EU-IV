@@ -71,7 +71,7 @@ public sealed class ReleaseRun
     public const string Placeholder = "PLACEHOLDER";
 
     /// <summary>Folders that belong to the repo but are not built (old code copy, notes, the published release tool, output).</summary>
-    private static readonly string[] NotBuilt = ["Migration Files", "loco", "release-tool", "release-output", ".git", ".worktrees", ".superpowers"];
+    private static readonly string[] NotBuilt = ["Migration Files", "loco", "release-tool", "release-output", "RNW Exports", "Release", ".git", ".worktrees", ".superpowers", ".vs"];
 
     private readonly ReleaseOptions _options;
     private readonly ICommandRunner _runner;
@@ -487,16 +487,53 @@ public sealed class ReleaseRun
     /// <summary>bin/obj next to every project of the repo (RNW keeps its projects in the root and under tools\), never in <see cref="NotBuilt"/>.</summary>
     private void CleanBuildOutput()
     {
-        var projects = Directory.EnumerateFiles(Paths.Root, "*.csproj", SearchOption.AllDirectories)
-            .Where(file => !Path.GetRelativePath(Paths.Root, file).Split(Path.DirectorySeparatorChar).Any(part => NotBuilt.Contains(part, StringComparer.OrdinalIgnoreCase)))
-            .ToList();
-        foreach (var folder in projects.SelectMany(project => new[] { "bin", "obj" }.Select(name => Path.Combine(Path.GetDirectoryName(project)!, name))))
+        foreach (var folder in BuildOutputFolders(Paths.Root))
         {
-            if (Directory.Exists(folder))
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// Existing bin/obj folders next to the projects under <paramref name="root"/>. Walks the tree itself so that excluded
+    /// folders (<see cref="NotBuilt"/>, bin, obj) are never entered, and skips folders it may not read instead of failing.
+    /// </summary>
+    internal static IReadOnlyList<string> BuildOutputFolders(string root)
+    {
+        var result = new List<string>();
+        var pending = new Stack<string>([root]);
+        while (pending.Count > 0)
+        {
+            var folder = pending.Pop();
+            string[] children;
+            bool isProject;
+            try
             {
-                Directory.Delete(folder, recursive: true);
+                isProject = Directory.EnumerateFiles(folder, "*.csproj").Any();
+                children = Directory.GetDirectories(folder);
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+            {
+                continue;
+            }
+
+            foreach (var child in children)
+            {
+                var name = Path.GetFileName(child);
+                if (name is "bin" or "obj")
+                {
+                    if (isProject)
+                    {
+                        result.Add(child);
+                    }
+                }
+                else if (!NotBuilt.Contains(name, StringComparer.OrdinalIgnoreCase))
+                {
+                    pending.Push(child);
+                }
             }
         }
+
+        return result;
     }
 
     private async Task<bool> Dotnet(CancellationToken cancellation, params string[] arguments) =>

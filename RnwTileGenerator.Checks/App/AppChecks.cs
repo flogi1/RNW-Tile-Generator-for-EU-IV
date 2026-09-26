@@ -6,7 +6,7 @@ namespace RnwTileGenerator.Checks;
 public class AppChecks : IDisposable
 {
     /// <summary>Key prefixes added by the auto-update work; every one of their texts must exist in all 7 languages.</summary>
-    private static readonly string[] Prefixes = ["update.", "help.", "bug.", "crash."];
+    private static readonly string[] Prefixes = ["update.", "help.", "bug.", "crash.", "save."];
 
     public void Dispose() => Loc.UseLanguage(AppLanguage.English);
 

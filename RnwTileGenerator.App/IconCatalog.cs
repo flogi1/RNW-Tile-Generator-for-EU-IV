@@ -21,7 +21,23 @@ public static class IconCatalog
 {
     private static readonly Dictionary<string, DecodedIcon?> Cache = new();
 
-    private static string IconsDir => Path.Combine(AppContext.BaseDirectory, "Icons");
+    /// <summary>Shipped icons; replaced as a whole by every update (listed in rnw-install-files.txt).</summary>
+    public const string ShippedIconsFolder = "Icons";
+
+    /// <summary>The user's own icons next to the exe. Not part of any release, so an update never touches it; an
+    /// icon here with the same name wins over the shipped one.</summary>
+    public const string UserIconsFolder = "UserIcons";
+
+    /// <summary>Path of the icon file for <paramref name="key"/>: UserIcons first, then Icons; null when neither has it.</summary>
+    public static string? ResolvePath(string key, string baseDirectory)
+    {
+        foreach (var folder in new[] { UserIconsFolder, ShippedIconsFolder })
+        {
+            var path = Path.Combine(baseDirectory, folder, key + ".dds");
+            if (File.Exists(path)) return path;
+        }
+        return null;
+    }
 
     public static DecodedIcon? TryGet(string key)
     {
@@ -29,8 +45,8 @@ public static class IconCatalog
         DecodedIcon? result = null;
         try
         {
-            var path = Path.Combine(IconsDir, key + ".dds");
-            if (File.Exists(path)) result = DdsIcon.Load(path).FirstSquareFrameIfStrip();
+            var path = ResolvePath(key, AppContext.BaseDirectory);
+            if (path != null) result = DdsIcon.Load(path).FirstSquareFrameIfStrip();
         }
         catch
         {

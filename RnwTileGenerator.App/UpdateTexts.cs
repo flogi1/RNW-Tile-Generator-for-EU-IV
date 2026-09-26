@@ -14,6 +14,14 @@ internal static class UpdateTexts
 
     public static string BarUpdated(AppVersion version) => F("update.bar.updated", version);
 
+    public static string BarFailed(AppVersion version) => F("update.bar.failed", version);
+
+    public static string BarCancelled(AppVersion version) => F("update.bar.cancelled", version);
+
+    public static string BarOpenLog => Loc.T("update.bar.openLog");
+
+    public static string BarOpenLogTip => Loc.T("update.bar.openLog.tip");
+
     public static string BarInstall => Loc.T("update.bar.install");
 
     public static string BarInstallTip => Loc.T("update.bar.install.tip");

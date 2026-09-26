@@ -149,6 +149,11 @@ TROUBLESHOOTING
   "Icons" folder is missing. Copy it back next to the program. (Option B:
   it is inside RnwTileGenerator.App.)
 
+- Own icons: put your own .dds files into a folder "UserIcons" next to
+  RnwTileGenerator.exe, named like the shipped file in "Icons" they
+  replace. "Icons" itself is replaced by every update; "UserIcons" is never
+  touched.
+
 - The program crashed - a file named crash_log.txt is written next to the
   .exe. Click "Report bug" in the error window, or use Help > "Report a
   bug": you can post the report as a GitHub issue (needs a GitHub account)

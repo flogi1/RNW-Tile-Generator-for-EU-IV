@@ -27,7 +27,10 @@ public sealed partial class MainWindow
 
     private Border? _updateBar;
     private TextBlock? _updateBarText;
-    private Button? _updateBarInstall, _updateBarRelease, _updateBarSkip, _updateBarClose;
+    private Button? _updateBarInstall, _updateBarRelease, _updateBarSkip, _updateBarLog, _updateBarClose;
+
+    /// <summary>What the bar currently says (null = hidden). Kept as kind + version so a language switch can rebuild the text.</summary>
+    private UpdateNotice? _updateNotice;
 
     // -- window layout --------------------------------------------------------
 
@@ -36,7 +39,7 @@ public sealed partial class MainWindow
     {
         var bar = UpdateBar;
         (bar.Parent as Panel)?.Children.Remove(bar);
-        RefreshUpdateBarTexts();
+        RefreshUpdateBar();
 
         var shell = new DockPanel();
         menu.SetValue(DockPanel.DockProperty, Dock.Top);
@@ -66,11 +69,12 @@ public sealed partial class MainWindow
             if (_pendingRelease is { } release) SaveUpdateSettings(_updateSettings with { SkippedUpdateVersion = release.Version.ToString() });
             HideUpdateBar();
         });
+        _updateBarLog = MakeButton((_, _) => OpenWithShell(UpdatePaths.Default.LogFile));
         _updateBarClose = MakeButton((_, _) => HideUpdateBar());
         _updateBarClose.Content = "✕";
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal };
-        foreach (var b in new[] { _updateBarInstall, _updateBarRelease, _updateBarSkip, _updateBarClose }) buttons.Children.Add(b);
+        foreach (var b in new[] { _updateBarInstall, _updateBarRelease, _updateBarSkip, _updateBarLog, _updateBarClose }) buttons.Children.Add(b);
         var row = new DockPanel { Margin = new Thickness(8, 4, 8, 4) };
         buttons.SetValue(DockPanel.DockProperty, Dock.Right);
         row.Children.Add(buttons);
@@ -85,7 +89,8 @@ public sealed partial class MainWindow
         };
     }
 
-    private void RefreshUpdateBarTexts()
+    /// <summary>Texts, button visibility and bar visibility from <see cref="_updateNotice"/>, in the current language.</summary>
+    private void RefreshUpdateBar()
     {
         _ = UpdateBar;
         _updateBarInstall!.Content = UpdateTexts.BarInstall;
@@ -93,39 +98,36 @@ public sealed partial class MainWindow
         _updateBarRelease!.Content = UpdateTexts.BarReleasePage;
         _updateBarRelease.ToolTip = UpdateTexts.BarReleasePageTip;
         _updateBarSkip!.Content = UpdateTexts.BarSkip;
+        _updateBarLog!.Content = UpdateTexts.BarOpenLog;
+        _updateBarLog.ToolTip = UpdateTexts.BarOpenLogTip;
         _updateBarClose!.ToolTip = UpdateTexts.BarLaterTip;
-        if (_pendingRelease is { } release && _updateBarInstall.Visibility == Visibility.Visible)
-            _updateBarText!.Text = UpdateTexts.BarAvailable(release.Version, AppInfo.Version);
+
+        var notice = _updateNotice;
+        UpdateBar.Visibility = notice is null ? Visibility.Collapsed : Visibility.Visible;
+        if (notice is null) return;
+        _updateBarText!.Text = notice.Text(AppInfo.Version);
+        var updateButtons = notice.ShowsUpdateButtons ? Visibility.Visible : Visibility.Collapsed;
+        _updateBarInstall.Visibility = _updateBarRelease.Visibility = _updateBarSkip.Visibility = updateButtons;
+        _updateBarLog.Visibility = notice.ShowsLogButton ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ShowUpdateBar(ReleaseInfo release)
     {
         _pendingRelease = release;
-        _ = UpdateBar;
-        SetUpdateBarButtonsVisible(true);
-        _updateBarText!.Text = UpdateTexts.BarAvailable(release.Version, AppInfo.Version);
-        UpdateBar.Visibility = Visibility.Visible;
+        ShowUpdateNotice(new UpdateNotice(UpdateNoticeKind.Available, release.Version));
     }
 
-    /// <summary>A plain notice ("Updated to X"): only the ✕ button.</summary>
-    private void ShowUpdateNotice(string text)
+    private void ShowUpdateNotice(UpdateNotice notice)
     {
-        _ = UpdateBar;
-        SetUpdateBarButtonsVisible(false);
-        _updateBarText!.Text = text;
-        UpdateBar.Visibility = Visibility.Visible;
+        _updateNotice = notice;
+        RefreshUpdateBar();
     }
 
-    private void HideUpdateBar() => UpdateBar.Visibility = Visibility.Collapsed;
-
-    private void SetUpdateBarButtonsVisible(bool visible)
+    private void HideUpdateBar()
     {
-        var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-        _updateBarInstall!.Visibility = visibility;
-        _updateBarRelease!.Visibility = visibility;
-        _updateBarSkip!.Visibility = visibility;
+        _updateNotice = null;
+        RefreshUpdateBar();
     }
-
     // -- Help menu ------------------------------------------------------------
 
     private MenuItem BuildHelpMenu()
@@ -271,10 +273,12 @@ public sealed partial class MainWindow
 
             var choice = UpdateReadyDialog.Ask(this, prepared.Version, Project != null);
             string? openProject = null;
-            var action = UpdateRestart.Decide(choice, Project != null, () => openProject = TrySaveProjectForUpdate());
+            var action = UpdateRestart.Decide(choice, Project != null, CurrentPath, () => openProject = TrySaveProjectForUpdate());
             if (action == UpdateRestartAction.Abort) return;
+            if (action == UpdateRestartAction.LaunchWithLastSaved) openProject = CurrentPath;
+            else if (action == UpdateRestartAction.LaunchWithoutProject) openProject = null;
 
-            if (LaunchUpdater(prepared, action == UpdateRestartAction.LaunchWithProject ? openProject : null))
+            if (LaunchUpdater(prepared, openProject))
                 Application.Current.Shutdown();
         }
         finally
@@ -323,9 +327,9 @@ public sealed partial class MainWindow
         {
             var sfd = new SaveFileDialog
             {
-                Title = "Save project as",
+                Title = Loc.T("menu.saveProjectAs"),
                 DefaultExt = ".rnwproj",
-                Filter = "RNW Tile Generator project (*.rnwproj)|*.rnwproj",
+                Filter = Loc.T("save.filter"),
                 FileName = $"{Project.Name}.rnwproj",
             };
             if (sfd.ShowDialog(this) != true) return null;
@@ -340,7 +344,7 @@ public sealed partial class MainWindow
         }
         catch (Exception exc)
         {
-            Dialogs.Error(this, "Save project", $"{exc.Message}\n\n{exc}");
+            Dialogs.Error(this, Loc.T("menu.saveProject"), string.Format(Loc.T("save.failed"), exc.Message) + "\n\n" + exc);
             return null;
         }
     }
