@@ -58,7 +58,7 @@ OPTION A - READY-TO-RUN RELEASE
    (this happens when "Smart App Control" is switched on), use Option B
    below. A program you build yourself on your own PC is not blocked.
 
-Updating (version 1.1.0 and later): when a new version exists, a yellow bar
+Updating (version 1.0.6 and later): when a new version exists, a yellow bar
 appears under the menu, or use Help > "Check for updates". Click "Update
 now": the program downloads the new version from GitHub, checks its
 signature and asks whether to save your project. Then it closes, replaces
@@ -67,7 +67,7 @@ presets and saved seeds stay as they are. If anything goes wrong, the old
 version is restored automatically.
 
 Updating from 1.0.5 (once, by hand): version 1.0.5 has no updater yet.
-Extract the 1.1.0 ZIP into a NEW folder. To keep your settings, presets and
+Extract the 1.0.6 (or newer) ZIP into a NEW folder. To keep your settings, presets and
 saved seeds, copy the small .json files from the old folder (for example
 language.json, generation_presets.json, generation_prefs.json,
 saved_seeds.json) next to the new .exe. Saved projects (.rnwproj) are

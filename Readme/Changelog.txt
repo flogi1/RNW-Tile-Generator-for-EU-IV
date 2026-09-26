@@ -3,6 +3,10 @@ New
 Changed
 Fixed
 
+v1.0.7 (26.09.2026)
+Fixed
+- Installation Readme: names 1.0.6 as the first version with automatic updates (it said 1.1.0).
+
 v1.0.6 (26.09.2026)
 New
 - Initial Public release
