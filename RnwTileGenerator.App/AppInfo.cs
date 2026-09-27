@@ -20,8 +20,11 @@ public static class AppInfo
     /// <summary>Dedicated address for bug reports sent by email (fallback for users without a GitHub account).</summary>
     public const string BugReportEmail = "flogirnw@gmail.com";
 
-    /// <summary>GitHub Sponsors page opened by the "Donate" menu entry.</summary>
-    public const string DonationUrl = "https://github.com/sponsors/flogi1";
+    /// <summary>GitHub Sponsors page (Donate > GitHub Sponsors).</summary>
+    public const string GitHubSponsorsUrl = "https://github.com/sponsors/flogi1";
+
+    /// <summary>Ko-fi page (Donate > Ko-fi).</summary>
+    public const string KofiUrl = "https://ko-fi.com/flogi";
 
     private static AppVersion ReadVersion()
     {

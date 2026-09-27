@@ -20,3 +20,7 @@ crash_log.txt
 # Git worktrees and superpowers scratch (plan ledgers, mockups)
 /.worktrees/
 /.superpowers/
+
+# Claude Code worktrees of other sessions (own git repos)
+**/.claude/worktrees/
+**/.claude/scheduled_tasks.lock

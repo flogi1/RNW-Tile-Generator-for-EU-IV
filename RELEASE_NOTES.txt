@@ -123,5 +123,5 @@ LICENSE AND SUPPORT
 -------------------
 
 Free software under the MIT license; the source code is on GitHub. If the
-tool is useful to you, the Donate menu entry leads to the project's GitHub
-Sponsors page.
+tool is useful to you, the Donate menu leads to the project's GitHub
+Sponsors page or to Ko-fi.

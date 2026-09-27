@@ -20,7 +20,7 @@
     <RootNamespace>RnwTileGenerator.App</RootNamespace>
     <AssemblyName>RnwTileGenerator</AssemblyName>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <Version>1.0.8</Version>
+    <Version>1.0.9</Version>
     <!-- Code-only WPF: no .xaml files anywhere in this project (see
          MainWindow.cs / Program.cs), so there is nothing for the XAML
          compiler to do and no ApplicationDefinition is declared. -->

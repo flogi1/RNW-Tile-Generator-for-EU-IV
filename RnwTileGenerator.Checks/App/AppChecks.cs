@@ -71,6 +71,16 @@ public class AppChecks : IDisposable
     }
 
     [Fact]
+    public void Donate_links_are_https_addresses()
+    {
+        foreach (var url in new[] { AppInfo.GitHubSponsorsUrl, AppInfo.KofiUrl })
+            Assert.True(Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps, url);
+        Assert.Equal("https://ko-fi.com/flogi", AppInfo.KofiUrl);
+        Assert.Contains(Loc.Entries, entry => entry.Key == "menu.donate.kofi");
+        Assert.Contains(Loc.Entries, entry => entry.Key == "menu.donate.github");
+    }
+
+    [Fact]
     public void App_version_comes_from_the_assembly()
     {
         Assert.True(AppInfo.Version > new AppVersion(1, 0, 0));

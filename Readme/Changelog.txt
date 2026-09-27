@@ -3,6 +3,10 @@ New
 Changed
 Fixed
 
+v1.0.9 (27.09.2026)
+New
+- Donate menu with GitHub Sponsors and Ko-fi.
+
 v1.0.8 (26.09.2026)
 New
 - Own icons in a UserIcons folder next to the program replace the shipped ones and survive updates.

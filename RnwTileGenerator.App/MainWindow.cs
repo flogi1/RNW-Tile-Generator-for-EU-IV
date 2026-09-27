@@ -534,8 +534,13 @@ public sealed partial class MainWindow : Window
             language.Items.Add(item);
         }
 
-        var donate = new MenuItem { Header = Loc.T("menu.donate"), ToolTip = Loc.T("menu.donate.tip") };
-        donate.Click += (_, _) => OpenDonationPage();
+        var donate = new MenuItem { Header = Loc.T("menu.donate") };
+        var sponsors = new MenuItem { Header = Loc.T("menu.donate.github"), ToolTip = Loc.T("menu.donate.github.tip") };
+        sponsors.Click += (_, _) => OpenDonationPage(AppInfo.GitHubSponsorsUrl);
+        var kofi = new MenuItem { Header = Loc.T("menu.donate.kofi"), ToolTip = Loc.T("menu.donate.kofi.tip") };
+        kofi.Click += (_, _) => OpenDonationPage(AppInfo.KofiUrl);
+        donate.Items.Add(sponsors);
+        donate.Items.Add(kofi);
 
         if (editor)
         {
@@ -548,18 +553,16 @@ public sealed partial class MainWindow : Window
         return menu;
     }
 
-    /// <summary>GitHub Sponsors page opened by the "Donate" menu entry (address lives in AppInfo).</summary>
-    private const string DonationUrl = AppInfo.DonationUrl;
-
-    private void OpenDonationPage()
+    /// <summary>Opens a support page from the Donate menu (addresses live in AppInfo).</summary>
+    private void OpenDonationPage(string url)
     {
         try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = DonationUrl, UseShellExecute = true });
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = url, UseShellExecute = true });
         }
         catch
         {
-            Dialogs.Error(this, Loc.T("menu.donate"), Loc.T("menu.donate.error") + "\n" + DonationUrl);
+            Dialogs.Error(this, Loc.T("menu.donate"), Loc.T("menu.donate.error") + "\n" + url);
         }
     }
 
