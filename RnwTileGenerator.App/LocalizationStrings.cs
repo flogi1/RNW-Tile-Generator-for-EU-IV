@@ -13,6 +13,7 @@ internal static partial class LocalizationStrings
     {
         RegisterUpdates();
         RegisterBugs();
+        RegisterToolbar();
         // -- common -----------------------------------------------------------
         Loc.Add("common.ok", "OK", "OK", "Aceptar", "OK", "OK", "ОК", "确定");
         Loc.Add("common.cancel", "Cancel", "Abbrechen", "Cancelar", "Annuler", "Annulla", "Отмена", "取消");

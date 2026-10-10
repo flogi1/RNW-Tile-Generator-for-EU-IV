@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using RnwTileGenerator.Core;
@@ -30,6 +31,12 @@ public sealed class StageMountains : IStage
 
     public UIElement View { get; }
     public PaintCanvasControl Canvas => _canvas;
+
+    public IReadOnlyList<ToolbarAction> ToolbarActions =>
+    [
+        new(Loc.T("mountains.generate"), null, Generate),
+        new(Loc.T("mountains.clear"), null, ClearMountains),
+    ];
 
     public StageMountains(MainWindow app)
     {

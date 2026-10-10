@@ -1,0 +1,137 @@
+RNW Tile Generator for Europa Universalis IV
+============================================
+
+RNW Tile Generator is a free Windows program for creating custom Random New
+World tiles for Europa Universalis IV - the ready-made map pieces the game
+uses when it generates the New World. It produces everything a tile needs:
+the tile text file with its metadata plus the coastline/height, river and
+province bitmaps, in exactly the format and folder layout the game expects.
+You can paint a tile by hand, let the program generate one for you, or open
+an existing game tile and change it.
+
+
+A COMPLETE WORKFLOW IN ONE PLACE
+--------------------------------
+
+The program guides you through the natural order of building a tile, one
+tab per step: Coastline, Mountains & Height, Rivers, Provinces, Special
+Features, Metadata and Export. You can work through them from left to right
+or jump back and forth at any time. Undo and redo cover every step, and
+projects can be saved and reopened as .rnwproj files.
+
+All painting tools have adjustable brush sizes and brush presets. The map
+view supports pixel-accurate zoom and panning and an optional grid that
+shows the game's layout. A semi-transparent reference image can be laid
+over the canvas as a tracing aid; it is never saved into the tile.
+
+
+GENERATE A WHOLE TILE WITH ONE CLICK
+------------------------------------
+
+The Random Generation tab builds a complete tile in a single run:
+coastline, terrain, rivers, provinces, straits, trade modifiers and
+regions. Sliders control land share, terrain roughness, number and length
+of rivers, province size and much more. Six built-in presets get you
+started, and you can save any number of your own.
+
+Every result comes from a seed, so a tile can be reproduced exactly or
+saved with a note for later. "Generate - new seed" and "Generate - same
+seed" let you run through variants quickly: keep your settings and roll a
+new map, or keep the map and fine-tune the settings. Generated tiles are a
+starting point - every part can be refined by hand afterwards.
+
+
+RIVERS THAT LOOK REAL AND KEEP THE GAME STABLE
+----------------------------------------------
+
+Broken rivers are one of the most common reasons a custom tile crashes the
+game, so the river system got special care. Generated rivers follow a
+flow-accumulation model: water runs downhill, tributaries join at real
+confluences, and river width grows with the area that drains into it. The
+result is a clean river tree without loops or self-touching pixels - the
+structure the game expects. A "River smoothness" slider sets how calm or
+winding the rivers are, and optional delta arms add realistic river mouths.
+
+Rivers can also be drawn by hand with waypoints or in freehand mode, pixel
+by pixel, with a live preview of the real river type and colour. The river
+selected in the list is highlighted red on the map, so you always know
+which one you are editing. Before export, the program warns about any
+river loop that would crash the game.
+
+
+NATURAL-LOOKING PROVINCES
+-------------------------
+
+Land and sea provinces are generated automatically. You control their
+average size, how much the sizes vary, and how curvy the borders are.
+Borders look organic without stray pixels or fragments bleeding into
+neighbouring provinces. An optional warning tells you when a tile gets
+close to the game's limit of about 1000 provinces.
+
+
+SPECIAL FEATURES WITH THE GAME'S OWN ICONS
+------------------------------------------
+
+Straits, modifiers and regions can be placed by hand or generated
+automatically with adjustable frequency. The Special Features tab shows
+them with the original game icons: trade centres, natural harbours,
+estuaries and more.
+
+
+START FROM WHAT YOU ALREADY HAVE
+--------------------------------
+
+Open an existing tile from the game and edit it. Import a grayscale
+heightmap to get realistic terrain from real-world or hand-made height
+data. Or trace any map image into land and water with an adjustable
+brightness threshold (experimental).
+
+
+SAFE, GAME-READY EXPORT
+-----------------------
+
+The Export tab writes <name>\<name>.txt plus a data\ folder with the three
+bitmaps, matching the game's own tile folders. Before writing, it checks
+the tile for duplicate province colours, land below water level, empty
+layers, the province limit and river loops, so problems show up in the
+program instead of in the game.
+
+
+STAYS UP TO DATE ON ITS OWN
+---------------------------
+
+Once a day at startup the program asks GitHub whether a new version exists
+(you can switch this off; no data about you or your tiles is sent). If
+there is one, a yellow bar offers "Update now". The program downloads the
+new version, verifies its digital signature and checksum, offers to save
+your project and restarts with it reopened. Settings, presets and saved
+seeds are kept, and if anything goes wrong, the previous version is
+restored automatically. A changelog in the Help menu lists what changed in
+every version.
+
+
+REPORTING PROBLEMS IS EASY
+--------------------------
+
+Help > "Report a bug" - or the "Report bug" button in the error window -
+opens a short form. You see the complete report before anything is sent,
+and you can post it as a prefilled GitHub issue or send it by email. Recent
+crash log entries are included automatically, with your personal folder
+names removed.
+
+
+MADE FOR EVERYONE
+-----------------
+
+The interface is available in seven languages: English, German, Spanish,
+French, Italian, Russian and Simplified Chinese. Every slider has an
+editable number field for exact values. The program runs on Windows 10 or
+11 (64-bit) and needs nothing else; the download is about 75 MB.
+
+
+LICENSE AND SUPPORT
+-------------------
+
+RNW Tile Generator is free software under the MIT license, and its source
+code is available on GitHub. If you find it useful, the Donate menu leads
+to GitHub Sponsors and Ko-fi.

@@ -136,6 +136,12 @@ public sealed class StageRandom : IStage
     public UIElement View { get; }
     public PaintCanvasControl Canvas => _canvas;
 
+    public IReadOnlyList<ToolbarAction> ToolbarActions =>
+    [
+        new(Loc.T("random.generateNew"), Loc.T("random.generateNew.tip"), () => Generate(newSeed: true)),
+        new(Loc.T("random.generateSame"), Loc.T("random.generateSame.tip"), () => Generate(newSeed: false)),
+    ];
+
     public StageRandom(MainWindow app)
     {
         _app = app;
@@ -154,9 +160,15 @@ public sealed class StageRandom : IStage
         presetPanel.Children.Add(_presetCombo);
         var presetLoadSaveRow = Ui.Horizontal();
         presetLoadSaveRow.Children.Add(Ui.Button(Loc.T("random.preset.load"), (_, _) => LoadSelectedPreset()));
-        presetLoadSaveRow.Children.Add(Ui.Button(Loc.T("random.preset.save"), (_, _) => SaveCurrentAsPreset()));
+        var overwriteBtn = Ui.Button(Loc.T("random.preset.overwrite"), (_, _) => OverwriteSelectedPreset());
+        overwriteBtn.ToolTip = Loc.T("random.preset.overwrite.tip");
+        presetLoadSaveRow.Children.Add(overwriteBtn);
         presetPanel.Children.Add(presetLoadSaveRow);
-        presetPanel.Children.Add(Ui.Button(Loc.T("random.preset.delete"), (_, _) => DeleteSelectedPreset()));
+        presetPanel.Children.Add(Ui.Button(Loc.T("random.preset.save"), (_, _) => SaveCurrentAsPreset()));
+        var presetEditRow = Ui.Horizontal();
+        presetEditRow.Children.Add(Ui.Button(Loc.T("random.preset.rename"), (_, _) => RenameSelectedPreset()));
+        presetEditRow.Children.Add(Ui.Button(Loc.T("random.preset.delete"), (_, _) => DeleteSelectedPreset()));
+        presetPanel.Children.Add(presetEditRow);
         var presetGroup = Ui.Group(Loc.T("random.preset.group"), presetPanel);
         presetGroup.ToolTip = Loc.T("random.preset.tip");
         side.Children.Add(presetGroup);
@@ -580,14 +592,71 @@ public sealed class StageRandom : IStage
 
         PresetStore.AddOrReplace(name, CapturePreset());
         RefreshPresetList();
+        SelectUserPreset(name);
+    }
+
+    private void SelectUserPreset(string name)
+    {
         for (int i = 0; i < _presetCombo.Items.Count; i++)
         {
-            if (_presetCombo.Items[i] is PresetListItem it && !it.IsBuiltIn && it.Key == name)
+            if (_presetCombo.Items[i] is PresetListItem it && !it.IsBuiltIn && string.Equals(it.Key, name, StringComparison.OrdinalIgnoreCase))
             {
                 _presetCombo.SelectedIndex = i;
                 break;
             }
         }
+    }
+
+    /// <summary>"Save": writes the current sliders into the selected own preset
+    /// (edit a preset without typing its name again).</summary>
+    private void OverwriteSelectedPreset()
+    {
+        if (_presetCombo.SelectedItem is not PresetListItem item)
+        {
+            Dialogs.Info(_app, Loc.T("random.preset.overwrite"), Loc.T("random.preset.noSelection"));
+            return;
+        }
+        if (item.IsBuiltIn)
+        {
+            Dialogs.Error(_app, Loc.T("random.preset.overwrite"), Loc.T("random.preset.cannotOverwriteBuiltIn"));
+            return;
+        }
+        if (!Dialogs.Confirm(_app, Loc.T("random.preset.overwrite"), string.Format(Loc.T("random.preset.confirmOverwrite"), item.Display)))
+            return;
+        PresetStore.AddOrReplace(item.Key, CapturePreset());
+        RefreshPresetList();
+        SelectUserPreset(item.Key);
+    }
+
+    private void RenameSelectedPreset()
+    {
+        if (_presetCombo.SelectedItem is not PresetListItem item)
+        {
+            Dialogs.Info(_app, Loc.T("random.preset.rename"), Loc.T("random.preset.noSelection"));
+            return;
+        }
+        if (item.IsBuiltIn)
+        {
+            Dialogs.Error(_app, Loc.T("random.preset.rename"), Loc.T("random.preset.cannotRenameBuiltIn"));
+            return;
+        }
+        var name = Dialogs.OneText(_app, Loc.T("random.preset.rename"), Loc.T("random.preset.nameLabel"), item.Key);
+        if (name == null) return; // cancelled
+        name = name.Trim();
+        if (name.Length == 0 || name == item.Key) return;
+
+        if (PresetStore.BuiltIn.Any(b => string.Equals(Loc.T(b.NameKey), name, StringComparison.OrdinalIgnoreCase)))
+        {
+            Dialogs.Error(_app, Loc.T("random.preset.rename"), Loc.T("random.preset.nameReservedError"));
+            return;
+        }
+        if (PresetStore.Rename(item.Key, name) == PresetRenameResult.NameTaken)
+        {
+            Dialogs.Error(_app, Loc.T("random.preset.rename"), Loc.T("random.preset.nameTaken"));
+            return;
+        }
+        RefreshPresetList();
+        SelectUserPreset(name);
     }
 
     private void DeleteSelectedPreset()

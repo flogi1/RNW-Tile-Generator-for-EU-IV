@@ -10,7 +10,7 @@ public class UpdatesPart2Checks : IDisposable
 
     /// <summary>The files RNW writes next to its exe; they are never part of the install list.</summary>
     private static readonly string[] UserFiles =
-        ["language.json", "generation_presets.json", "saved_seeds.json", "brush_presets.json", "generation_prefs.json", "crash_log.txt"];
+        ["language.json", "generation_presets.json", "saved_seeds.json", "brush_presets.json", "generation_prefs.json", "export_prefs.json", "crash_log.txt"];
 
     private string Target => _temp.Combine("RNW Tile Generator Ä");
 

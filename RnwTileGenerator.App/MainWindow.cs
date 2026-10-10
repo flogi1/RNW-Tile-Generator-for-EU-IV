@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,7 +27,15 @@ public interface IStage
     /// that button. Defaults to null so existing/simple stages don't need
     /// to implement this explicitly.</summary>
     PaintCanvasControl? Canvas => null;
+
+    /// <summary>Buttons this stage shows in the toolbar while it is the active tab -
+    /// each one runs the same method as the matching sidebar button. Read again on
+    /// every tab change and on MainWindow.RefreshStageToolbar().</summary>
+    IReadOnlyList<ToolbarAction> ToolbarActions => Array.Empty<ToolbarAction>();
 }
+
+/// <summary>One stage button in the toolbar, see IStage.ToolbarActions.</summary>
+public sealed record ToolbarAction(string Label, string? ToolTip, Action Run);
 
 /// <summary>
 /// Main application window: landing screen, project lifecycle, and the
@@ -47,6 +56,9 @@ public sealed partial class MainWindow : Window
     private TabControl? _notebook;
     private TextBlock? _status;
     private Button? _undoBtn, _redoBtn;
+    private ToolBar? _toolbar;
+    private Separator? _stageToolbarAnchor;
+    private readonly List<object> _stageToolbarItems = new();
 
     /// <summary>Start arguments: update result (see MainWindow.UpdateStart.cs) and the project to open (--open).</summary>
     private readonly UpdateStartInfo _start;
@@ -272,6 +284,7 @@ public sealed partial class MainWindow : Window
         _notebook.SelectionChanged += OnTabChanged;
         _notebook.SelectedIndex = 0;
         _stages[0].stage.OnShow();
+        RefreshStageToolbar();
 
         dock.Children.Add(_notebook);
         SetScreen(BuildMenu(editor: true), dock);
@@ -316,6 +329,11 @@ public sealed partial class MainWindow : Window
         // brush stroke intended). Only the first, non-repeat KeyDown of a
         // held chord should ever trigger an action here.
         if (e.IsRepeat) return;
+        if (TrySwitchTabByKey(e))
+        {
+            e.Handled = true;
+            return;
+        }
         bool ctrl = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
         if (!ctrl) return;
         if (e.Key == Key.Z && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
@@ -346,7 +364,65 @@ public sealed partial class MainWindow : Window
         if (_notebook == null || _notebook.SelectedIndex < 0 || _notebook.SelectedIndex >= _stages.Count) return;
         _stages[_notebook.SelectedIndex].stage.OnShow();
         if (_status != null) _status.Text = StatusText();
+        RefreshStageToolbar();
     }
+
+    /// <summary>Rebuilds the active tab's toolbar buttons. Stages call this when the
+    /// set of buttons they offer changes (e.g. the Provinces mode).</summary>
+    public void RefreshStageToolbar()
+    {
+        if (_toolbar == null || _stageToolbarAnchor == null) return;
+        foreach (var item in _stageToolbarItems) _toolbar.Items.Remove(item);
+        _stageToolbarItems.Clear();
+        if (_notebook == null || _notebook.SelectedIndex < 0 || _notebook.SelectedIndex >= _stages.Count) return;
+
+        int insertAt = _toolbar.Items.IndexOf(_stageToolbarAnchor) + 1;
+        foreach (var action in _stages[_notebook.SelectedIndex].stage.ToolbarActions)
+        {
+            var btn = new Button { Content = action.Label, ToolTip = action.ToolTip, Padding = new Thickness(8, 2, 8, 2), Margin = new Thickness(4, 0, 0, 0) };
+            var run = action.Run;
+            btn.Click += (_, _) => { CommitPendingInput(); run(); };
+            _toolbar.Items.Insert(insertAt++, btn);
+            _stageToolbarItems.Add(btn);
+        }
+    }
+
+    private void ExportFromToolbar()
+    {
+        CommitPendingInput();
+        if (_stages.FirstOrDefault(s => s.key == "export").stage is StageExport export)
+            export.ExportNow();
+    }
+
+    /// <summary>The toolbar is its own focus scope: clicking it leaves logical focus in a
+    /// sidebar number field, whose value is only taken over on LostFocus (Ui.LabeledSlider).
+    /// Moving focus to the tab first commits a just-typed value before the action runs.</summary>
+    private void CommitPendingInput()
+    {
+        if (_notebook?.SelectedItem is TabItem tab && tab.Focus()) return;
+        _notebook?.Focus();
+    }
+
+    /// <summary>Tab / Shift+Tab switch tabs unless the keyboard focus is in a text
+    /// field (there Tab keeps moving to the next field); Ctrl+Tab always switches.</summary>
+    private bool TrySwitchTabByKey(KeyEventArgs e)
+    {
+        if (e.Key != Key.Tab || _notebook == null || _stages.Count == 0) return false;
+        bool ctrl = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+        if (!ctrl && IsTextInput(Keyboard.FocusedElement)) return false;
+        if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) return false;
+
+        bool back = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+        int count = _stages.Count;
+        int current = Math.Max(_notebook.SelectedIndex, 0);
+        CommitPendingInput(); // Ctrl+Tab from a number field: take over its value first
+        _notebook.SelectedIndex = (current + (back ? count - 1 : 1)) % count;
+        CommitPendingInput(); // focus the new tab so the next Tab press switches again
+        return true;
+    }
+
+    private static bool IsTextInput(IInputElement? focused) =>
+        focused is TextBox or PasswordBox or RichTextBox || (focused is ComboBox { IsEditable: true });
 
     public void GoToExport()
     {
@@ -377,6 +453,17 @@ public sealed partial class MainWindow : Window
                 _stages[_notebook.SelectedIndex].stage.Canvas?.FitToWindow();
         };
         bar.Items.Add(resetViewBtn);
+
+        // Buttons of the active tab go between these two separators (RefreshStageToolbar).
+        _toolbar = bar;
+        _stageToolbarItems.Clear();
+        _stageToolbarAnchor = new Separator { Margin = new Thickness(12, 0, 0, 0) };
+        bar.Items.Add(_stageToolbarAnchor);
+        bar.Items.Add(new Separator { Margin = new Thickness(12, 0, 0, 0) });
+
+        var exportBtn = new Button { Content = "💾 " + Loc.T("toolbar.export"), ToolTip = Loc.T("toolbar.export.tip"), Padding = new Thickness(8, 2, 8, 2) };
+        exportBtn.Click += (_, _) => ExportFromToolbar();
+        bar.Items.Add(exportBtn);
 
         bar.Items.Add(new Separator { Margin = new Thickness(12, 0, 0, 0) });
         BuildReferenceOverlayControls(bar);

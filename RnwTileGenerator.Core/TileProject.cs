@@ -9,6 +9,9 @@ using System.Text.Json.Nodes;
 
 namespace RnwTileGenerator.Core;
 
+/// <summary>Folder layout of an export, see TileProject.ResolveExportPaths.</summary>
+public enum ExportLayout { TileFolder, ModFolder }
+
 /// <summary>
 /// Direct port of the original Python "rnw/project.py" module's
 /// GenerationSettings dataclass.
@@ -1650,7 +1653,35 @@ public sealed class TileProject
 
     // -- export to game files -------------------------------------------------
 
-    public List<string> Export(string directory)
+    /// <summary>Where Export() puts the files. TileDir holds the .txt; the bitmaps go to
+    /// DataBasePath + "_h.bmp" / "_r.bmp" / "_p.bmp".</summary>
+    public readonly record struct ExportPaths(string TileDir, string TxtPath, string DataBasePath);
+
+    /// <summary>
+    /// TileFolder: &lt;directory&gt;/&lt;name&gt;/&lt;name&gt;.txt plus &lt;directory&gt;/&lt;name&gt;/data/.
+    /// ModFolder: straight into the game's tile folder of a mod - &lt;mod&gt;/map/random/tiles/&lt;name&gt;.txt
+    /// plus .../tiles/data/. A directory that already ends in map\random\tiles is used as is.
+    /// </summary>
+    public static ExportPaths ResolveExportPaths(string directory, string name, ExportLayout layout)
+    {
+        string dir = directory.Trim().TrimEnd('\\', '/');
+        string tileDir;
+        if (layout == ExportLayout.TileFolder)
+        {
+            tileDir = Path.Combine(dir, name);
+        }
+        else
+        {
+            string[] tail = { "map", "random", "tiles" };
+            var parts = dir.Split('\\', '/');
+            bool isTilesDir = parts.Length >= tail.Length
+                && parts.Skip(parts.Length - tail.Length).Zip(tail).All(p => string.Equals(p.First, p.Second, StringComparison.OrdinalIgnoreCase));
+            tileDir = isTilesDir ? dir : Path.Combine(dir, "map", "random", "tiles");
+        }
+        return new ExportPaths(tileDir, Path.Combine(tileDir, name + ".txt"), Path.Combine(tileDir, "data", name));
+    }
+
+    public List<string> Export(string directory, ExportLayout layout = ExportLayout.TileFolder)
     {
         if (ProvinceResult == null) throw new InvalidOperationException("Generate or draw provinces before exporting.");
         var colorIssue = FindDuplicateProvinceColors();
@@ -1674,16 +1705,14 @@ public sealed class TileProject
         if (moistureIdx >= 0) Metadata.ExtraFields[moistureIdx] = ("add_moisture", moistureInt.ToString(CultureInfo.InvariantCulture));
         else Metadata.ExtraFields.Add(("add_moisture", moistureInt.ToString(CultureInfo.InvariantCulture)));
 
-        // Export layout matches the game's own RNW tile folder convention:
-        // <tilename>/<tilename>.txt next to a <tilename>/data/ folder
-        // holding the three generated bitmaps.
-        string tileDir = Path.Combine(directory, Name);
-        string dataDir = Path.Combine(tileDir, "data");
-        Directory.CreateDirectory(tileDir);
-        Directory.CreateDirectory(dataDir);
-        string dataBasePath = Path.Combine(dataDir, Name);
+        // Both layouts match the game's own RNW tile folder convention:
+        // <tilename>.txt next to a data/ folder holding the three bitmaps.
+        var paths = ResolveExportPaths(directory, Name, layout);
+        Directory.CreateDirectory(paths.TileDir);
+        Directory.CreateDirectory(Path.GetDirectoryName(paths.DataBasePath)!);
+        string dataBasePath = paths.DataBasePath;
 
-        string txtPath = Path.Combine(tileDir, Name + ".txt");
+        string txtPath = paths.TxtPath;
         string hPath = dataBasePath + "_h.bmp";
         string rPath = dataBasePath + "_r.bmp";
         string pPath = dataBasePath + "_p.bmp";

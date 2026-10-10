@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace RnwTileGenerator.App;
@@ -12,6 +13,8 @@ public sealed class NamedPreset
     public string Name { get; set; } = "";
     public GenerationPreset Values { get; set; } = new();
 }
+
+public enum PresetRenameResult { Ok, NotFound, NameTaken }
 
 /// <summary>A preset shipped with the app itself - not user-editable or
 /// -deletable. NameKey is a Loc.T(...) key rather than a raw string so its
@@ -79,10 +82,33 @@ public static class PresetStore
 
     public static void AddOrReplace(string name, GenerationPreset values)
     {
+        // An existing preset keeps its list position (overwriting after editing it).
         var all = LoadAllInternal();
-        all.RemoveAll(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
-        all.Add(new NamedPreset { Name = name, Values = values });
+        int idx = all.FindIndex(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (idx >= 0) all[idx] = new NamedPreset { Name = all[idx].Name, Values = values };
+        else all.Add(new NamedPreset { Name = name, Values = values });
         Save();
+    }
+
+    /// <summary>Renames a user preset in place (keeps its list position and values).
+    /// Built-in name collisions are checked by the caller, which knows the UI language.</summary>
+    public static PresetRenameResult Rename(string oldName, string newName)
+    {
+        var result = RenameIn(LoadAllInternal(), oldName, newName);
+        if (result == PresetRenameResult.Ok) Save();
+        return result;
+    }
+
+    /// <summary>The list logic behind Rename(), separate so it can be checked without touching the file.
+    /// A pure case change of the same preset is allowed.</summary>
+    public static PresetRenameResult RenameIn(List<NamedPreset> presets, string oldName, string newName)
+    {
+        int idx = presets.FindIndex(p => string.Equals(p.Name, oldName, StringComparison.OrdinalIgnoreCase));
+        if (idx < 0) return PresetRenameResult.NotFound;
+        bool taken = presets.Where((p, i) => i != idx).Any(p => string.Equals(p.Name, newName, StringComparison.OrdinalIgnoreCase));
+        if (taken) return PresetRenameResult.NameTaken;
+        presets[idx].Name = newName;
+        return PresetRenameResult.Ok;
     }
 
     public static void Delete(string name)

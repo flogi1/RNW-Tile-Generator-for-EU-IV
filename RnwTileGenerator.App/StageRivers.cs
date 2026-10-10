@@ -45,6 +45,13 @@ public sealed class StageRivers : IStage
     public UIElement View { get; }
     public PaintCanvasControl Canvas => _canvas;
 
+    public IReadOnlyList<ToolbarAction> ToolbarActions =>
+    [
+        new(Loc.T("rivers.regenNew"), Loc.T("rivers.regenNew.tip"), () => RegenerateRivers(newSeed: true)),
+        new(Loc.T("rivers.regenSame"), Loc.T("rivers.regenSame.tip"), () => RegenerateRivers(newSeed: false)),
+        new(Loc.T("rivers.clearAll"), null, ClearAll),
+    ];
+
     /// <remarks>
     /// Two ways to lay down a river: clicking out every waypoint by hand
     /// ("Waypoints" mode, precise but fiddly for a long winding river), or

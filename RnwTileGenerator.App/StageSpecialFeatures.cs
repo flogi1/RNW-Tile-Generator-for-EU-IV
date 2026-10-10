@@ -99,6 +99,16 @@ public sealed class StageSpecialFeatures : IStage
     public UIElement View { get; }
     public PaintCanvasControl Canvas => _canvas;
 
+    public IReadOnlyList<ToolbarAction> ToolbarActions =>
+    [
+        new(Loc.T("specialFeatures.generateStraits"), null, GenerateStraits),
+        new(Loc.T("specialFeatures.generateRegions"), null, GenerateRegions),
+        new(Loc.T("specialFeatures.generateModifiers"), null, GenerateModifiers),
+        new(Loc.T("toolbar.sf.removeAllStraits"), null, RemoveAllStraits),
+        new(Loc.T("toolbar.sf.removeAllRegions"), null, RemoveAllRegions),
+        new(Loc.T("toolbar.sf.removeAllModifiers"), null, RemoveAllModifiers),
+    ];
+
     public StageSpecialFeatures(MainWindow app)
     {
         _app = app;
@@ -637,6 +647,7 @@ public sealed class StageSpecialFeatures : IStage
     private void RemoveAllStraits()
     {
         if (_straitList.Items.Count == 0) return;
+        _app.Undo?.SnapshotBeforeChange();
         _app.Project!.Metadata.Straits.Clear();
         RefreshStraits();
         _canvas.RequestRedraw();
@@ -691,6 +702,7 @@ public sealed class StageSpecialFeatures : IStage
     private void RemoveAllRegions()
     {
         if (_regionList.Items.Count == 0) return;
+        _app.Undo?.SnapshotBeforeChange();
         _app.Project!.Metadata.Regions.Clear();
         RefreshRegions();
         _canvas.RequestRedraw();
@@ -800,6 +812,7 @@ public sealed class StageSpecialFeatures : IStage
     private void RemoveAllModifiers()
     {
         if (_modList.Items.Count == 0) return;
+        _app.Undo?.SnapshotBeforeChange();
         _app.Project!.Metadata.Modifiers.Clear();
         RefreshModifiers();
         _canvas.RequestRedraw();

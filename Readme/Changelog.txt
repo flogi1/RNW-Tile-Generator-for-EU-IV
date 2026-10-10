@@ -3,6 +3,16 @@ New
 Changed
 Fixed
 
+v1.0.10 (10.10.2026)
+New
+- Toolbar shows the generate buttons of the current tab (e.g. Generate - new seed / same seed on the Random tab) and an Export button.
+- Tab / Shift+Tab switch between tabs (outside text fields); Ctrl+Tab always works.
+- Presets: Save writes the current settings into the selected own preset; own presets can be renamed.
+- Export can write straight into a mod folder (map\random\tiles and its data folder), without an extra tile folder.
+Changed
+- The export folder and export target are remembered between sessions.
+- Remove all straits/regions/modifiers can now be undone.
+
 v1.0.9 (27.09.2026)
 New
 - Donate menu with GitHub Sponsors and Ko-fi.

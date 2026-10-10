@@ -50,6 +50,33 @@ public sealed class StageProvinces : IStage
     public UIElement View { get; }
     public PaintCanvasControl Canvas => _canvas;
 
+    /// <summary>Same buttons the sidebar shows for the current mode, plus Recolor.
+    /// Manual "rebuild" only in manual mode: in auto mode it would replace the
+    /// provinces with whatever (empty) hand-drawn borders exist.</summary>
+    public IReadOnlyList<ToolbarAction> ToolbarActions
+    {
+        get
+        {
+            var list = new List<ToolbarAction>();
+            switch (_mode)
+            {
+                case "auto":
+                    list.Add(new(Loc.T("provinces.generate"), null, GenerateAuto));
+                    list.Add(new(Loc.T("provinces.generateLandOnly"), Loc.T("provinces.generateLandOnly.tip"), RegenerateLandOnly));
+                    list.Add(new(Loc.T("provinces.generateSeaOnly"), Loc.T("provinces.generateSeaOnly.tip"), RegenerateSeaOnly));
+                    break;
+                case "manual":
+                    list.Add(new(Loc.T("provinces.rebuild"), null, RebuildManual));
+                    break;
+                case "rect":
+                    list.Add(new(Loc.T("toolbar.provinces.rect"), null, GenerateRect));
+                    break;
+            }
+            list.Add(new(Loc.T("toolbar.provinces.recolor"), null, Recolor));
+            return list;
+        }
+    }
+
     public StageProvinces(MainWindow app)
     {
         _app = app;
@@ -327,6 +354,7 @@ public sealed class StageProvinces : IStage
         _rectFrame.Visibility = _mode == "rect" ? Visibility.Visible : Visibility.Collapsed;
         UpdateBrushPreview();
         Redraw();
+        _app.RefreshStageToolbar(); // mode-specific toolbar buttons
     }
 
     private void UpdateInfo()

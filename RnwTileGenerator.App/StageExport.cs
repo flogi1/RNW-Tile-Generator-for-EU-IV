@@ -23,8 +23,18 @@ public sealed class StageExport : IStage
 
     private string _previewMode = "provinces"; // "provinces" | "height" | "rivers"
 
+    /// <summary>Remembered target (layout + one folder per layout), see ExportPrefs.</summary>
+    private readonly ExportPrefs _prefs = ExportPrefs.Load();
+    private ExportLayout _layout;
+    private bool _switchingLayout;
+
     public UIElement View { get; }
     public PaintCanvasControl Canvas => _canvas;
+
+    public IReadOnlyList<ToolbarAction> ToolbarActions =>
+    [
+        new(Loc.T("toolbar.export.validate"), null, Validate),
+    ];
 
     public StageExport(MainWindow app)
     {
@@ -51,8 +61,25 @@ public sealed class StageExport : IStage
 
         side.Children.Add(Ui.Sep());
 
+        _layout = _prefs.Layout;
+        var layoutPanel = Ui.Stack();
+        var tileFolderRadio = Ui.Radio(Loc.T("export.layout.tileFolder"), "export-layout", _layout == ExportLayout.TileFolder, (_, _) => SwitchLayout(ExportLayout.TileFolder));
+        tileFolderRadio.ToolTip = Loc.T("export.layout.tileFolder.tip");
+        layoutPanel.Children.Add(tileFolderRadio);
+        var modFolderRadio = Ui.Radio(Loc.T("export.layout.modFolder"), "export-layout", _layout == ExportLayout.ModFolder, (_, _) => SwitchLayout(ExportLayout.ModFolder));
+        modFolderRadio.ToolTip = Loc.T("export.layout.modFolder.tip");
+        layoutPanel.Children.Add(modFolderRadio);
+        side.Children.Add(Ui.Group(Loc.T("export.layout.group"), layoutPanel));
+
         side.Children.Add(new TextBlock { Text = "Output folder:", Margin = new Thickness(0, 0, 0, 2) });
-        _outDirBox = new TextBox { Text = app.DefaultExportDir() };
+        _outDirBox = new TextBox { Text = PathForLayout(_layout) };
+        // Remember every edit (typed or picked via Browse) for the current layout.
+        _outDirBox.TextChanged += (_, _) =>
+        {
+            if (_switchingLayout) return;
+            _prefs.SetPath(_layout, _outDirBox.Text.Trim());
+            _prefs.Save();
+        };
         side.Children.Add(_outDirBox);
         var folderRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 0) };
         folderRow.Children.Add(Ui.Button("Browse...", (_, _) => Browse()));
@@ -103,9 +130,26 @@ public sealed class StageExport : IStage
         _app.RefreshStatus();
     }
 
+    private string PathForLayout(ExportLayout layout) =>
+        _prefs.PathFor(layout) ?? (layout == ExportLayout.TileFolder ? _app.DefaultExportDir() : "");
+
+    /// <summary>Each layout keeps its own folder: switching shows the one last used for it.</summary>
+    private void SwitchLayout(ExportLayout layout)
+    {
+        if (layout == _layout) return;
+        _layout = layout;
+        _prefs.Layout = layout;
+        _switchingLayout = true;
+        _outDirBox.Text = PathForLayout(layout);
+        _switchingLayout = false;
+        _prefs.Save();
+    }
+
     private void Browse()
     {
-        var dlg = new OpenFolderDialog { Title = "Choose output folder" };
+        var dlg = new OpenFolderDialog { Title = _layout == ExportLayout.ModFolder ? Loc.T("export.layout.pickMod") : "Choose output folder" };
+        string current = _outDirBox.Text.Trim();
+        if (current.Length > 0 && Directory.Exists(current)) dlg.InitialDirectory = current;
         if (dlg.ShowDialog(_app) == true) _outDirBox.Text = dlg.FolderName;
     }
 
@@ -165,6 +209,9 @@ public sealed class StageExport : IStage
         _validationLabel.Text = issues.Count > 0 ? string.Join("\n", issues) : "No problems found.";
     }
 
+    /// <summary>Export with the settings of this tab - also used by the toolbar's Export button.</summary>
+    public void ExportNow() => Export();
+
     private void Export()
     {
         var p = _app.Project!;
@@ -173,21 +220,33 @@ public sealed class StageExport : IStage
             Dialogs.Error(_app, "Export", "Generate or draw provinces before exporting.");
             return;
         }
+        string dir = _outDirBox.Text.Trim();
+        if (dir.Length == 0)
+        {
+            Dialogs.Error(_app, "Export", Loc.T("export.noFolder"));
+            return;
+        }
+        // A mod folder must already exist - a typo should not silently create a stray mod.
+        if (_layout == ExportLayout.ModFolder && !Directory.Exists(dir))
+        {
+            Dialogs.Error(_app, "Export", string.Format(Loc.T("export.layout.modMissing"), dir));
+            return;
+        }
         var exportRiverWarn = RiverCycleWarning(p);
         if (exportRiverWarn != null && !Dialogs.Confirm(_app, "Export", exportRiverWarn + "\n\n" + Loc.T("export.exportAnyway")))
             return;
         List<string> paths;
         try
         {
-            paths = p.Export(_outDirBox.Text);
+            paths = p.Export(dir, _layout);
         }
         catch (Exception exc)
         {
             Dialogs.Error(_app, "Export failed", exc.Message);
             return;
         }
-        string tileDir = Path.Combine(_outDirBox.Text, p.Name);
+        string tileDir = TileProject.ResolveExportPaths(dir, p.Name, _layout).TileDir;
         _exportLabel.Text = $"Wrote to {tileDir}:\n" + string.Join("\n", paths.Select(path => Path.GetRelativePath(tileDir, path)));
-        Dialogs.Info(_app, "Export", $"Tile files written to:\n{tileDir}\n\n({p.Name}.txt directly in that folder, the bitmaps in its data\\ subfolder - matching the game's own tile folder layout.)");
+        Dialogs.Info(_app, "Export", string.Format(Loc.T("export.done"), tileDir, p.Name));
     }
 }
